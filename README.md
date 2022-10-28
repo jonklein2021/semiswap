@@ -1,2 +1,3 @@
-# semiswap
-Mini Automated Market Maker
+# Semiswap
+
+### A Mini Automated Market Manager 

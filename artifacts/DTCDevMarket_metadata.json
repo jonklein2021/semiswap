@@ -1,0 +1,146 @@
+{
+	"compiler": {
+		"version": "0.8.7+commit.e28d00a7"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_amountEth",
+						"type": "uint256"
+					}
+				],
+				"name": "estimateERC20TokenToProvide",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_amountERC20Token",
+						"type": "uint256"
+					}
+				],
+				"name": "estimateEthToProvide",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_amountEth",
+						"type": "uint256"
+					}
+				],
+				"name": "estimateSwapForERC20Token",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_amountERC20Token",
+						"type": "uint256"
+					}
+				],
+				"name": "estimateSwapForEth",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_amountERC20Token",
+						"type": "uint256"
+					}
+				],
+				"name": "provideLiquidity",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "swapForERC20Token",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_amountERC20Token",
+						"type": "uint256"
+					}
+				],
+				"name": "swapForEth",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "_liquidityPositionsToBurn",
+						"type": "uint256"
+					}
+				],
+				"name": "withdrawLiquidity",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"details": "Set & change owner",
+			"kind": "dev",
+			"methods": {},
+			"title": "Owner",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"Exchange.sol": "DTCDevMarket"
+		},
+		"evmVersion": "london",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"Exchange.sol": {
+			"keccak256": "0x6414b2fd686468ce8a24c4d753e140fc5332292b8d4107b314786d0ec7bc90c2",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://e10a57542336a44259a29afd98b9081b03de7de611154ea4e77f9b81bc23bb86",
+				"dweb:/ipfs/QmdqasET2VAaZmEhGXjFFVHxerq38kjM3STs9EJCb1vRGN"
+			]
+		}
+	},
+	"version": 1
+}

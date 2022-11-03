@@ -7,6 +7,9 @@ pragma solidity >=0.7.0 <0.9.0;
  */
 contract DTCDevMarket {
 
+    int private k = 0;
+    int private totalLiquidityPositions = 0;
+
     function provideLiquidity(uint _amountERC20Token) public {
       /*
       *Caller deposits Ether and ERC20 token in ratio equal to the current ratio of tokens in the contract

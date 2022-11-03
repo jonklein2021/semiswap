@@ -7,8 +7,9 @@ pragma solidity >=0.7.0 <0.9.0;
  */
 contract DTCDevMarket {
 
-    int private k = 0;
-    int private totalLiquidityPositions = 0;
+    uint private k = 0;
+    uint private totalLiquidityPositions = 0;
+    mapping(address => uint) private LiquidityAddresses;
 
     function provideLiquidity(uint _amountERC20Token) public {
       /*

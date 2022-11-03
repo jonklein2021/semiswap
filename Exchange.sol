@@ -56,6 +56,8 @@ contract DTCDevMarket {
       /*Return a uint of the amount of the caller’s liquidity positions (the uint associated to the address
       *calling in your liquidityPositions mapping) for when a user wishes to view their liquidity positions
       */
+      
+      return (IERC20(tokenAddress).balanceOf(address(this)))*(_amountEth)/(address(this).balance);
     }
 
     function withdrawLiquidity(uint _liquidityPositionsToBurn) public {

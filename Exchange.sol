@@ -95,6 +95,8 @@ contract DTCDevMarket {
       /*hint: ethToSend = contractEthBalance-contractEthBalanceAfterSwap where contractEthBalanceAfterSwap = K/contractERC20TokenBalanceAfterSwap
       */
       //Return a uint of the amount of Ether caller would receive
+      
+      return (_amountERC20Token)*(address(this).balance)/(IERC20(tokenAddress).balanceOf(address(this)));
     }
 
     function swapForERC20Token() public {

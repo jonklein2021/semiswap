@@ -1,15 +1,27 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.7.0 <0.9.0;
 
+import "hardhat/console.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+
 /**
  * @title Owner
  * @dev Set & change owner
  */
 contract DTCDevMarket {
 
+    address private tokenAddress;
     uint private k = 0;
     uint private totalLiquidityPositions = 0;
     mapping(address => uint) private LiquidityAddresses;
+
+    /**
+     * @dev Creates a OMM for the token at the given address 
+     */
+    constructor(address _tokenContractAddress) {
+        console.log("Exchange for ERC20 token contract located at :", _tokenContractAddress);
+        tokenAddress = _tokenContractAddress;
+    }
 
     function provideLiquidity(uint _amountERC20Token) public {
       /*
@@ -40,7 +52,7 @@ contract DTCDevMarket {
       */
     }
 
-    function estimateERC20TokenToProvide(uint _amountEth) public {
+    function estimateERC20TokenToProvide(uint _amountEth) public returns(uint){
       /*Users who want to provide liquidity won’t know the current ratio of the tokens in the contract so
       *they’ll have to call this function to find out how much ERC-20 token to deposit if they want to
       *deposit an amount of Ether
@@ -79,6 +91,7 @@ contract DTCDevMarket {
     }
 
     function swapForEth(uint _amountERC20Token) public {
+      IERC20(tokenAddress).transferFrom(msg.sender, address(this), _amountERC20Token);
       //Caller deposits some ERC20 token in return for some Ether
       /*
       * hint: ethToSend = contractEthBalance - contractEthBalanceAfterSwap
@@ -89,7 +102,7 @@ contract DTCDevMarket {
       //Return a uint of the amount of Ether sent
     }
 
-    function estimateSwapForEth(uint _amountERC20Token) public {
+    function estimateSwapForEth(uint _amountERC20Token) public returns(uint){
       /*estimates the amount of Ether to give caller based on amount ERC20 token caller wishes to swap
       *for when a user wants to know how much Ether to expect when calling swapForEth
       /*hint: ethToSend = contractEthBalance-contractEthBalanceAfterSwap where contractEthBalanceAfterSwap = K/contractERC20TokenBalanceAfterSwap

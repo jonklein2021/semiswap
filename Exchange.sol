@@ -38,7 +38,7 @@ contract DTCDevMarket {
       //Return a uint of the amount of liquidity positions issued
     }
 
-    function estimateEthToProvide(uint _amountERC20Token) public {
+    function estimateEthToProvide(uint _amountERC20Token) public view returns(uint) {
       /*
       *Users who want to provide liquidity won’t know the current ratio of the tokens in the contract so
       *they’ll have to call this function to find out how much Ether to deposit if they want to deposit a
@@ -52,7 +52,7 @@ contract DTCDevMarket {
       */
     }
 
-    function estimateERC20TokenToProvide(uint _amountEth) public returns(uint){
+    function estimateERC20TokenToProvide(uint _amountEth) public view returns(uint) {
       /*Users who want to provide liquidity won’t know the current ratio of the tokens in the contract so
       *they’ll have to call this function to find out how much ERC-20 token to deposit if they want to
       *deposit an amount of Ether
@@ -72,7 +72,7 @@ contract DTCDevMarket {
       return (IERC20(tokenAddress).balanceOf(address(this)))*(_amountEth)/(address(this).balance);
     }
 
-    function withdrawLiquidity(uint _liquidityPositionsToBurn) public {
+    function withdrawLiquidity(uint _liquidityPositionsToBurn) public returns(uint, uint){
       /* Caller gives up some of their liquidity positions and receives some Ether and ERC20 tokens in
       *return.
       *Use the above to get
@@ -90,8 +90,11 @@ contract DTCDevMarket {
       //Return 2 uints, the amount of ERC20 tokens sent and the amount of Ether sent
     }
 
-    function swapForEth(uint _amountERC20Token) public {
-      IERC20(tokenAddress).transferFrom(msg.sender, address(this), _amountERC20Token);
+    function swapForEth(uint _amountERC20Token) public returns(uint ETHSent) {
+      bool success = IERC20(tokenAddress).transferFrom(msg.sender, address(this), _amountERC20Token);
+      require(success);
+      ETHSent = 0;
+      return ETHSent;
       //Caller deposits some ERC20 token in return for some Ether
       /*
       * hint: ethToSend = contractEthBalance - contractEthBalanceAfterSwap
@@ -102,7 +105,7 @@ contract DTCDevMarket {
       //Return a uint of the amount of Ether sent
     }
 
-    function estimateSwapForEth(uint _amountERC20Token) public returns(uint){
+    function estimateSwapForEth(uint _amountERC20Token) public view returns(uint){
       /*estimates the amount of Ether to give caller based on amount ERC20 token caller wishes to swap
       *for when a user wants to know how much Ether to expect when calling swapForEth
       /*hint: ethToSend = contractEthBalance-contractEthBalanceAfterSwap where contractEthBalanceAfterSwap = K/contractERC20TokenBalanceAfterSwap

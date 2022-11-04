@@ -92,8 +92,12 @@ contract DTCDevMarket {
 
     function swapForEth(uint _amountERC20Token) public returns(uint ETHSent) {
       bool success = IERC20(tokenAddress).transferFrom(msg.sender, address(this), _amountERC20Token);
-      require(success);
-      ETHSent = 0;
+      require(success, "Unable to transfer ERC20 to contract");
+      uint ETHToSend = address(this).balance - (k / (IERC20(tokenAddress).balanceOf(address(this))) );
+      require(ETHToSend < address(this).balance , "Insufficient funds to pay ETH");
+      success = payable(msg.sender).send(ETHToSend);
+      require(success, "Unable to pay sender");
+      ETHSent = ETHToSend;
       return ETHSent;
       //Caller deposits some ERC20 token in return for some Ether
       /*
@@ -115,7 +119,12 @@ contract DTCDevMarket {
       return (_amountERC20Token)*(address(this).balance)/(IERC20(tokenAddress).balanceOf(address(this)));
     }
 
-    function swapForERC20Token() public {
+    function swapForERC20Token() public returns(uint ERC20Sent) {
+      uint ERC20ToSend = IERC20(tokenAddress).balanceOf(address(this)) - (k / address(this).balance);
+      bool success = IERC20(tokenAddress).transfer(msg.sender, ERC20ToSend);
+      require(success, "Unable to transfer ERC20 to caller");
+      ERC20Sent = ERC20ToSend;
+      return ERC20Sent;
       //Caller deposits some Ether in return for some ERC20 tokens
       //hint: ERC20TokenToSend = contractERC20TokenBalance - contractERC20TokenBalanceAfterSwap
       //where contractERC20TokenBalanceAfterSwap = K /contractEthBalanceAfterSwap
@@ -124,7 +133,8 @@ contract DTCDevMarket {
       //Return a uint of the amount of ERC20 tokens sent
     }
 
-    function estimateSwapForERC20Token(uint _amountEth) public {
+    function estimateSwapForERC20Token(uint _amountEth) public view returns(uint ERC20Estimate){
+      return ERC20Estimate = IERC20(tokenAddress).balanceOf(address(this)) - (k / (_amountEth + address(this).balance));
       /* estimates the amount of ERC20 token to give caller based on amount Ether caller wishes to
       * swap for when a user wants to know how many ERC-20 tokens to expect when calling swapForERC20Token
       */

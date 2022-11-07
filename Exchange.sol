@@ -1,12 +1,12 @@
-// SPDX-License-Identifier: MIT
-pragma solidity >=0.7.0 <0.9.0;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >=0.8.0 <0.9.0;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 /**
- * @title Owner
- * @dev Set & change owner
+ * @title OMM For ETH and a provided ERC20 token address
+ * @dev Exchanges ETH and an ERC20 token, and can be deposited to for future liquidity.
  */
 contract DTCDevMarket {
 
@@ -23,7 +23,24 @@ contract DTCDevMarket {
         tokenAddress = _tokenContractAddress;
     }
 
-    function provideLiquidity(uint _amountERC20Token) public {
+    function provideLiquidity(uint _amountERC20Token) public payable returns(uint liquidityPositionsProvided) {
+      if(totalLiquidityPositions != 0) {
+        bool maintainingRatio = ( (totalLiquidityPositions * _amountERC20Token / IERC20(tokenAddress).balanceOf(address(this))) == (totalLiquidityPositions * msg.value / (address(this).balance - msg.value)) );
+        require(maintainingRatio, "Tokens not deposited in the expected ratio.");
+      }
+      bool success = IERC20(tokenAddress).transferFrom(msg.sender, address(this), _amountERC20Token);
+      require(success, "ERC20 Tokens unable to be transfered to contract.");
+      if(totalLiquidityPositions == 0) {
+        liquidityPositionsProvided += 100;
+      } else {
+        //MATH FOR BEFORE OR AFTER TRANSFER??
+        liquidityPositionsProvided = totalLiquidityPositions * _amountERC20Token / (IERC20(tokenAddress).balanceOf(address(this)) - _amountERC20Token);
+      }
+      totalLiquidityPositions += liquidityPositionsProvided;
+      LiquidityAddresses[msg.sender] += liquidityPositionsProvided;
+      k = address(this).balance * IERC20(tokenAddress).balanceOf(address(this));
+      return liquidityPositionsProvided;
+
       /*
       *Caller deposits Ether and ERC20 token in ratio equal to the current ratio of tokens in the contract
       *and receives liquidity positions (that is:
@@ -38,7 +55,10 @@ contract DTCDevMarket {
       //Return a uint of the amount of liquidity positions issued
     }
 
-    function estimateEthToProvide(uint _amountERC20Token) public view returns(uint) {
+    function estimateEthToProvide(uint _amountERC20Token) public view returns(uint ETHEstimate) {
+      ETHEstimate = (address(this).balance)*(_amountERC20Token)/(IERC20(tokenAddress).balanceOf(address(this)));
+      return ETHEstimate;
+
       /*
       *Users who want to provide liquidity won’t know the current ratio of the tokens in the contract so
       *they’ll have to call this function to find out how much Ether to deposit if they want to deposit a
@@ -50,10 +70,12 @@ contract DTCDevMarket {
       *Use the above to get amountEth =
       *contractEthBalance * amountERC20Token / contractERC20TokenBalance)
       */
-      return (address(this).balance)*(_amountERC20Token)/(IERC20(tokenAddress).balanceOf(address(this)));
     }
 
-    function estimateERC20TokenToProvide(uint _amountEth) public view returns(uint) {
+    function estimateERC20TokenToProvide(uint _amountEth) public view returns(uint ERC20Estimate) {
+      ERC20Estimate = (IERC20(tokenAddress).balanceOf(address(this)))*(_amountEth)/(address(this).balance);
+      return ERC20Estimate;
+
       /*Users who want to provide liquidity won’t know the current ratio of the tokens in the contract so
       *they’ll have to call this function to find out how much ERC-20 token to deposit if they want to
       *deposit an amount of Ether
@@ -69,8 +91,6 @@ contract DTCDevMarket {
       /*Return a uint of the amount of the caller’s liquidity positions (the uint associated to the address
       *calling in your liquidityPositions mapping) for when a user wishes to view their liquidity positions
       */
-      
-      return (IERC20(tokenAddress).balanceOf(address(this)))*(_amountEth)/(address(this).balance);
     }
 
     function withdrawLiquidity(uint _liquidityPositionsToBurn) public returns(uint ERC20Sent, uint ETHSent) {
@@ -108,6 +128,7 @@ contract DTCDevMarket {
     }
 
     function swapForEth(uint _amountERC20Token) public returns(uint ETHSent) {
+      require(k != 0, "The contract does not have any liquidity.");
       bool success = IERC20(tokenAddress).transferFrom(msg.sender, address(this), _amountERC20Token);
       require(success, "Unable to transfer ERC20 to contract");
       uint ETHToSend = address(this).balance - (k / (IERC20(tokenAddress).balanceOf(address(this))) );
@@ -116,6 +137,7 @@ contract DTCDevMarket {
       require(success, "Unable to pay sender");
       ETHSent = ETHToSend;
       return ETHSent;
+
       //Caller deposits some ERC20 token in return for some Ether
       /*
       * hint: ethToSend = contractEthBalance - contractEthBalanceAfterSwap
@@ -127,22 +149,25 @@ contract DTCDevMarket {
     }
 
     function estimateSwapForEth(uint _amountERC20Token) public view returns(uint ETHEstimate){
+      require(k != 0, "The contract does not have any liquidity.");
       ETHEstimate = address(this).balance - (k / (IERC20(tokenAddress).balanceOf(address(this)) + _amountERC20Token) );
       return ETHEstimate;
+
       /*estimates the amount of Ether to give caller based on amount ERC20 token caller wishes to swap
       *for when a user wants to know how much Ether to expect when calling swapForEth
       /*hint: ethToSend = contractEthBalance-contractEthBalanceAfterSwap where contractEthBalanceAfterSwap = K/contractERC20TokenBalanceAfterSwap
       */
       //Return a uint of the amount of Ether caller would receive
-      
     }
 
-    function swapForERC20Token() public returns(uint ERC20Sent) {
+    function swapForERC20Token() public payable returns(uint ERC20Sent) {
+      require(k != 0, "The contract does not have any liquidity.");
       uint ERC20ToSend = IERC20(tokenAddress).balanceOf(address(this)) - (k / address(this).balance);
       bool success = IERC20(tokenAddress).transfer(msg.sender, ERC20ToSend);
       require(success, "Unable to transfer ERC20 to caller");
       ERC20Sent = ERC20ToSend;
       return ERC20Sent;
+
       //Caller deposits some Ether in return for some ERC20 tokens
       //hint: ERC20TokenToSend = contractERC20TokenBalance - contractERC20TokenBalanceAfterSwap
       //where contractERC20TokenBalanceAfterSwap = K /contractEthBalanceAfterSwap
@@ -152,7 +177,10 @@ contract DTCDevMarket {
     }
 
     function estimateSwapForERC20Token(uint _amountEth) public view returns(uint ERC20Estimate){
-      return ERC20Estimate = IERC20(tokenAddress).balanceOf(address(this)) - (k / (_amountEth + address(this).balance));
+      require(k != 0, "The contract does not have any liquidity.");
+      ERC20Estimate = IERC20(tokenAddress).balanceOf(address(this)) - (k / (_amountEth + address(this).balance));
+      return ERC20Estimate;
+
       /* estimates the amount of ERC20 token to give caller based on amount Ether caller wishes to
       * swap for when a user wants to know how many ERC-20 tokens to expect when calling swapForERC20Token
       */

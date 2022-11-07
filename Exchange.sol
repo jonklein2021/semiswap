@@ -73,7 +73,23 @@ contract DTCDevMarket {
       return (IERC20(tokenAddress).balanceOf(address(this)))*(_amountEth)/(address(this).balance);
     }
 
-    function withdrawLiquidity(uint _liquidityPositionsToBurn) public returns(uint, uint){
+    function withdrawLiquidity(uint _liquidityPositionsToBurn) public returns(uint ERC20Sent, uint ETHSent) {
+      require(totalLiquidityPositions > _liquidityPositionsToBurn, "Can not give up all liquitity positions in the market/pool");
+      require(LiquidityAddresses[msg.sender] >= _liquidityPositionsToBurn, "Does not have the required amount of liquitity to burn");
+      //UNSURE OF ORDER. SHOULD BE CALCULATED USING NEW/OLD K, LIQUIDITY POSITIONS Or BALANCES????
+      uint ETHToSend = _liquidityPositionsToBurn * address(this).balance / totalLiquidityPositions;
+      uint ERC20ToSend = _liquidityPositionsToBurn * IERC20(tokenAddress).balanceOf(address(this)) / totalLiquidityPositions;
+      totalLiquidityPositions -= _liquidityPositionsToBurn;
+      LiquidityAddresses[msg.sender] -= _liquidityPositionsToBurn;
+      k = (address(this).balance - ETHToSend) * (IERC20(tokenAddress).balanceOf(address(this)) - ERC20ToSend);
+      bool success = IERC20(tokenAddress).transfer(msg.sender, ERC20ToSend);
+      require(success, "Unable to pay ERC20 to sender");
+      ERC20Sent = ERC20ToSend;
+      success = payable(msg.sender).send(ETHToSend);
+      require(success, "Unable to pay sender");
+      ETHSent = ETHToSend;
+      return (ERC20Sent, ETHSent);
+
       /* Caller gives up some of their liquidity positions and receives some Ether and ERC20 tokens in
       *return.
       *Use the above to get
@@ -110,7 +126,9 @@ contract DTCDevMarket {
       //Return a uint of the amount of Ether sent
     }
 
-    function estimateSwapForEth(uint _amountERC20Token) public view returns(uint){
+    function estimateSwapForEth(uint _amountERC20Token) public view returns(uint ETHEstimate){
+      ETHEstimate = address(this).balance - (k / (IERC20(tokenAddress).balanceOf(address(this)) + _amountERC20Token) );
+      return ETHEstimate;
       /*estimates the amount of Ether to give caller based on amount ERC20 token caller wishes to swap
       *for when a user wants to know how much Ether to expect when calling swapForEth
       /*hint: ethToSend = contractEthBalance-contractEthBalanceAfterSwap where contractEthBalanceAfterSwap = K/contractERC20TokenBalanceAfterSwap

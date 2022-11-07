@@ -50,6 +50,7 @@ contract DTCDevMarket {
       *Use the above to get amountEth =
       *contractEthBalance * amountERC20Token / contractERC20TokenBalance)
       */
+      return (address(this).balance)*(_amountERC20Token)/(IERC20(tokenAddress).balanceOf(address(this)));
     }
 
     function estimateERC20TokenToProvide(uint _amountEth) public view returns(uint) {
@@ -116,7 +117,6 @@ contract DTCDevMarket {
       */
       //Return a uint of the amount of Ether caller would receive
       
-      return (_amountERC20Token)*(address(this).balance)/(IERC20(tokenAddress).balanceOf(address(this)));
     }
 
     function swapForERC20Token() public returns(uint ERC20Sent) {

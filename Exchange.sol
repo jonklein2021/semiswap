@@ -27,6 +27,9 @@ contract DTCDevMarket {
       if(totalLiquidityPositions != 0) {
         bool maintainingRatio = ( (totalLiquidityPositions * _amountERC20Token / IERC20(tokenAddress).balanceOf(address(this))) == (totalLiquidityPositions * msg.value / (address(this).balance - msg.value)) );
         require(maintainingRatio, "Tokens not deposited in the expected ratio.");
+      }  else {
+        require(_amountERC20Token > 0, "Required to deposit ERC20");
+        require(msg.value > 0, "Required to deposit ETH");
       }
       bool success = IERC20(tokenAddress).transferFrom(msg.sender, address(this), _amountERC20Token);
       require(success, "ERC20 Tokens unable to be transfered to contract.");
@@ -132,7 +135,7 @@ contract DTCDevMarket {
       //Return 2 uints, the amount of ERC20 tokens sent and the amount of Ether sent
     }
 
-    function swapForEth(uint _amountERC20Token) public returns(uint ETHSent) {
+    function swapForEth(uint _amountERC20Token) public payable returns(uint ETHSent) {
       require(k != 0, "The contract does not have any liquidity.");
       bool success = IERC20(tokenAddress).transferFrom(msg.sender, address(this), _amountERC20Token);
       require(success, "Unable to transfer ERC20 to contract");

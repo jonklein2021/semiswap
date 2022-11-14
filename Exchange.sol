@@ -93,7 +93,12 @@ contract DTCDevMarket {
       */
     }
 
-    function withdrawLiquidity(uint _liquidityPositionsToBurn) public returns(uint ERC20Sent, uint ETHSent) {
+    function getMyLiquidityPositions() public view returns (uint myLiquidityPositiions) {
+      myLiquidityPositiions = LiquidityAddresses[msg.sender];
+      return (myLiquidityPositiions);
+    }
+
+    function withdrawLiquidity(uint _liquidityPositionsToBurn) public payable returns(uint ERC20Sent, uint ETHSent) {
       require(totalLiquidityPositions > _liquidityPositionsToBurn, "Can not give up all liquitity positions in the market/pool");
       require(LiquidityAddresses[msg.sender] >= _liquidityPositionsToBurn, "Does not have the required amount of liquitity to burn");
       //UNSURE OF ORDER. SHOULD BE CALCULATED USING NEW/OLD K, LIQUIDITY POSITIONS Or BALANCES????

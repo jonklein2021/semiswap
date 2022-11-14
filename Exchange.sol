@@ -23,6 +23,28 @@ contract DTCDevMarket {
         tokenAddress = _tokenContractAddress;
     }
 
+    event LiquidityProvided(
+      uint amountERC20TokenDeposited,
+      uint amountEthDeposited,
+      uint liquidityPositionsIssued
+    );
+
+    event LiquidityWithdrew(
+      uint amountERC20TokenWithdrew,
+      uint amountEthWithdrew,
+      uint liquidityPositionsBurned
+    );
+
+    event SwapForEth(
+      uint amountERC20TokenDeposited,
+      uint amountEthWithdrew
+    );
+
+    event SwapForERC20Token(
+      uint amountERC20TokenWithdrew,
+      uint amountEthDeposited
+    );
+
     function provideLiquidity(uint _amountERC20Token) public payable returns(uint liquidityPositionsProvided) {
       if(totalLiquidityPositions != 0) {
         bool maintainingRatio = ( (totalLiquidityPositions * _amountERC20Token / IERC20(tokenAddress).balanceOf(address(this))) == (totalLiquidityPositions * msg.value / (address(this).balance - msg.value)) );
@@ -42,6 +64,10 @@ contract DTCDevMarket {
       totalLiquidityPositions += liquidityPositionsProvided;
       LiquidityAddresses[msg.sender] += liquidityPositionsProvided;
       k = address(this).balance * IERC20(tokenAddress).balanceOf(address(this));
+
+      //emit event
+      emit LiquidityProvided(_amountERC20Token, msg.value, liquidityPositionsProvided);
+
       return liquidityPositionsProvided;
 
       /*
@@ -116,6 +142,10 @@ contract DTCDevMarket {
       success = payable(msg.sender).send(ETHToSend);
       require(success, "Unable to pay sender");
       ETHSent = ETHToSend;
+
+      //emit event
+      emit LiquidityWithdrew(ERC20ToSend, ETHToSend, _liquidityPositionsToBurn);
+
       return (ERC20Sent, ETHSent);
 
       /* Caller gives up some of their liquidity positions and receives some Ether and ERC20 tokens in
@@ -144,6 +174,10 @@ contract DTCDevMarket {
       success = payable(msg.sender).send(ETHToSend);
       require(success, "Unable to pay sender");
       ETHSent = ETHToSend;
+
+      //emit event
+      emit SwapForEth(_amountERC20Token, ETHSent);
+
       return ETHSent;
 
       //Caller deposits some ERC20 token in return for some Ether
@@ -174,6 +208,10 @@ contract DTCDevMarket {
       bool success = IERC20(tokenAddress).transfer(msg.sender, ERC20ToSend);
       require(success, "Unable to transfer ERC20 to caller");
       ERC20Sent = ERC20ToSend;
+
+      //emit event
+      emit SwapForERC20Token(ERC20Sent, msg.value);
+
       return ERC20Sent;
 
       //Caller deposits some Ether in return for some ERC20 tokens
